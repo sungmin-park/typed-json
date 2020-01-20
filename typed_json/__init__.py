@@ -25,6 +25,7 @@ class TypedJson:
 
     def __init__(self):
         self._fields = dict()
+        
         for name, prototype in self._field_prototypes.items():
             field = copy(prototype)
             self._fields[name] = field
@@ -42,7 +43,6 @@ class TypedJson:
     def validate(self) -> Dict[str, ErrorsType]:
         errors = {}
         for field in self._fields.values():
-            field: TypedJsonField
             field_errors = field.validate()
             if not field_errors:
                 continue
