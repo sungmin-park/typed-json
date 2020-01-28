@@ -1,6 +1,8 @@
 from copy import copy
 from typing import ClassVar, Dict, Union, TypeVar, Generic, List, Any
 
+from stringcase import spinalcase
+
 ValidJsonType = Union[str]
 
 ErrorType = Union[str]
@@ -16,12 +18,12 @@ class TypedJson:
 
         cls._field_prototypes = dict()
         for name in dir(cls):
-            attr = getattr(cls, name)
-            if not isinstance(attr, TypedJsonField):
+            field = getattr(cls, name)
+            if not isinstance(field, TypedJsonField):
                 continue
             delattr(cls, name)
-            attr.name = name
-            cls._field_prototypes[name] = attr
+            field.name = spinalcase(name)
+            cls._field_prototypes[name] = field
 
     def __init__(self):
         self._fields = dict()
@@ -32,10 +34,10 @@ class TypedJson:
             setattr(self, name, field)
 
     def load(self, source: Dict[str, ValidJsonType]) -> 'TypedJson':
-        for name, value in source.items():
-            if name not in self._fields:
+        for field in self._fields.values():
+            if field.name not in source:
                 continue
-            self._fields[name].value = value
+            field.value = source[field.name]
         return self
 
     def dump(self) -> Dict[str, Any]:

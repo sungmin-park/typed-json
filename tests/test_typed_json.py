@@ -24,32 +24,37 @@ def test_class_field_access():
 
 def test_field_name():
     class Person(TypedJson):
-        name = String()
+        first_name = String()
+        last_name = String()
         address = String()
 
     field_name = Person()
-    assert field_name.name.name == 'name'
+    assert field_name.first_name.name == 'first-name'
+    assert field_name.last_name.name == 'last-name'
     assert field_name.address.name == 'address'
 
 
 def test_load():
     class Person(TypedJson):
-        name = String()
+        first_name = String()
+        last_name = String()
         address = String()
 
-    person = Person().load(dict(name='이름'))
-    assert person.name.value == '이름'
+    person = Person().load({'first-name': 'John', 'last-name': 'Doe'})
+    assert person.first_name.value == 'John'
+    assert person.last_name.value == 'Doe'
     assert person.address.value is None
 
 
 def test_dump():
     class Person(TypedJson):
-        name = String()
+        first_name = String()
+        last_name = String()
         address = String()
 
-    person = Person().load(dict(name='이름', address='address'))
+    person = Person().load({'first-name': 'John', 'last-name': 'Doe', 'address': 'Seoul, Korea'})
 
-    assert person.dump() == dict(name='이름', address='address')
+    assert person.dump() == {'first-name': 'John', 'last-name': 'Doe', 'address': 'Seoul, Korea'}
 
 
 def test_validate():
