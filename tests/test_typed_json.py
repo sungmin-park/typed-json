@@ -54,4 +54,4 @@ def test_validate():
         address = String(optional=True)
 
     person = Person().load(dict(name='john'))
-    assert person.validate() == dict(sex=['sex field is required']), "name is filed and address is optional"
+    assert person.validate() == dict(sex=['sex field is required']), "name was filed and address is optional"
