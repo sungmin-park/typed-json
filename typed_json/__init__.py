@@ -25,7 +25,7 @@ class TypedJson:
 
     def __init__(self):
         self._fields = dict()
-        
+
         for name, prototype in self._field_prototypes.items():
             field = copy(prototype)
             self._fields[name] = field
@@ -33,11 +33,9 @@ class TypedJson:
 
     def load(self, source: Dict[str, ValidJsonType]) -> 'TypedJson':
         for name, value in source.items():
-            field = getattr(self, name, None)
-            if not isinstance(field, TypedJsonField):
-                # ignore other fields
+            if name not in self._fields:
                 continue
-            field.value = value
+            self._fields[name].value = value
         return self
 
     def validate(self) -> Dict[str, ErrorsType]:
