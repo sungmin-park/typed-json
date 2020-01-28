@@ -1,5 +1,5 @@
 from copy import copy
-from typing import ClassVar, Dict, Union, TypeVar, Generic, List
+from typing import ClassVar, Dict, Union, TypeVar, Generic, List, Any
 
 ValidJsonType = Union[str]
 
@@ -37,6 +37,9 @@ class TypedJson:
                 continue
             self._fields[name].value = value
         return self
+
+    def dump(self) -> Dict[str, Any]:
+        return {field.name: field.value for field in self._fields.values()}
 
     def validate(self) -> Dict[str, ErrorsType]:
         errors = {}

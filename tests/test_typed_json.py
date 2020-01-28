@@ -42,6 +42,16 @@ def test_load():
     assert person.address.value is None
 
 
+def test_dump():
+    class Person(TypedJson):
+        name = String()
+        address = String()
+
+    person = Person().load(dict(name='이름', address='address'))
+
+    assert person.dump() == dict(name='이름', address='address')
+
+
 def test_validate():
     class Empty(TypedJson):
         pass
