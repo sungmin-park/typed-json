@@ -48,6 +48,7 @@ def test_validate():
 
     assert Empty().validate() == dict()
 
+    # optional validation are too many used, so make it as default
     class Person(TypedJson):
         name = String()
         sex = String()
