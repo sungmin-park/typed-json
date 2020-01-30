@@ -4,7 +4,7 @@ from typing import ClassVar, Dict, Union, TypeVar, Generic, List, Any, DefaultDi
 
 from stringcase import spinalcase
 
-ValidJsonType = Union[str]
+ValidJsonType = Union[str, int]
 
 ErrorType = Union[str]
 ErrorsType = List[ErrorType]
@@ -71,26 +71,42 @@ class TypedJsonField(Generic[T]):
     name: str
     value: T = None
     optional: bool
-    validators: List[Validator]
+    validators: List[Validator] = list()
 
     def __init__(self, optional: bool = False, validators: Optional[Iterable[Validator]] = None):
         self.optional = optional
         if validators is not None:
-            self.validators = list(validators)
-        else:
-            self.validators = []
+            self.validators = self.validators + list(validators)
 
     def validate(self) -> ErrorsType:
         errors = []
+        # validate optional
         if self.value is None and not self.optional:
             errors.append(f'{self.name} field is required')
+
+        # default field class validator
+        self._validate(errors)
+
+        # custom validator
         for validator in self.validators:
             validator(self, errors)
+
         return errors
+
+    def _validate(self, errors: ErrorsType) -> None:
+        pass
 
 
 class String(TypedJsonField[str]):
-    pass
+    def _validate(self, errors: ErrorsType) -> None:
+        if self.value is not None and not isinstance(self.value, str):
+            errors.append(f'{self.name} field should be an string')
+
+
+class Integer(TypedJsonField[int]):
+    def _validate(self, errors: ErrorsType) -> None:
+        if self.value is not None and not isinstance(self.value, int):
+            errors.append(f'{self.name} field should be an integer number')
 
 
 class Errors(defaultdict, DefaultDict[TypedJsonField, ErrorsType]):

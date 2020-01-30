@@ -2,7 +2,7 @@ from typing import DefaultDict
 
 from pytest import raises
 
-from typed_json import TypedJson, String, ErrorsType, TypedJsonField
+from typed_json import TypedJson, String, ErrorsType, TypedJsonField, Integer
 
 
 def test_class_field_access():
@@ -108,3 +108,32 @@ def test_errors_dump():
         name = String()
 
     assert Person().load(dict()).validate().dump() == {'name': ['name field is required']}
+
+
+def test_int():
+    class Person(TypedJson):
+        age = Integer()
+
+    assert Person().load(dict(age=1)).age.value == 1
+
+    person = Person().load(dict(age='1'))
+    assert person.validate() == {person.age: ['age field should be an integer number']}
+    assert person.age.value == '1'
+
+    # int validate should not works None
+    person = Person()
+    assert person.validate() == {person.age: ['age field is required']}
+
+
+def test_str():
+    class Person(TypedJson):
+        name = String()
+
+    assert Person().load({'name': 'John'}).name.value == 'John'
+
+    person = Person().load(dict(name=True))
+    assert person.validate() == {person.name: ['name field should be an string']}
+
+    # String validate should not works None
+    person = Person()
+    assert person.validate() == {person.name: ['name field is required']}
