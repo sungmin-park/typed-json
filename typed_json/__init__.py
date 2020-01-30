@@ -1,5 +1,6 @@
+from collections import defaultdict
 from copy import copy
-from typing import ClassVar, Dict, Union, TypeVar, Generic, List, Any
+from typing import ClassVar, Dict, Union, TypeVar, Generic, List, Any, DefaultDict, Optional, Iterable, Callable
 
 from stringcase import spinalcase
 
@@ -43,32 +44,58 @@ class TypedJson:
     def dump(self) -> Dict[str, Any]:
         return {field.name: field.value for field in self._fields.values()}
 
-    def validate(self) -> Dict[str, ErrorsType]:
-        errors = {}
+    def validate(self) -> 'Errors':
+        errors = Errors()
         for field in self._fields.values():
             field_errors = field.validate()
             if not field_errors:
                 continue
-            errors[field.name] = field_errors
+            errors[field] = field_errors
+        self.post_validate(errors)
         return errors
+
+    def post_validate(self, errors: DefaultDict['TypedJsonField', ErrorsType]) -> None:
+        """
+        Class level validation point. This method will call right after validate.
+        :param errors: field errors
+        """
+        pass
 
 
 T = TypeVar('T')
+
+Validator = Callable[[Any, ErrorsType], None]
 
 
 class TypedJsonField(Generic[T]):
     name: str
     value: T = None
     optional: bool
+    validators: List[Validator]
 
-    def __init__(self, optional: bool = False):
+    def __init__(self, optional: bool = False, validators: Optional[Iterable[Validator]] = None):
         self.optional = optional
+        if validators is not None:
+            self.validators = list(validators)
+        else:
+            self.validators = []
 
     def validate(self) -> ErrorsType:
-        if self.value is not None or self.optional:
-            return []
-        return [f'{self.name} field is required']
+        errors = []
+        if self.value is None and not self.optional:
+            errors.append(f'{self.name} field is required')
+        for validator in self.validators:
+            validator(self, errors)
+        return errors
 
 
 class String(TypedJsonField[str]):
     pass
+
+
+class Errors(defaultdict, DefaultDict[TypedJsonField, ErrorsType]):
+    def __init__(self) -> None:
+        super().__init__(list)
+
+    def dump(self) -> Dict[str, ErrorsType]:
+        return {field.name: errors for field, errors in self.items()}
