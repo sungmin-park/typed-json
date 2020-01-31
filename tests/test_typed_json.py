@@ -92,8 +92,10 @@ def test_class_validation():
     assert request.action is None
     assert errors == {'action': ['danger module is not imported']}
 
-    request, errors = load({'action': {'__name__': 'test_class_validation', '__module__': 'tests.test_typed_json'}},
-                           Request)
+    request, errors = load(
+        {'action': {'__name__': 'test_class_validation', '__module__': 'tests.test_typed_json'}},
+        Request
+    )
     assert request.action is None
     assert errors == {'action': ['test_class_validation is not dataclass']}
 
