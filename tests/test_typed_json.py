@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from typed_json import load, dump
+from typed_json import load, dump, v, size
 
 
 @dataclass
@@ -78,6 +78,16 @@ def test_validate_required():
         'address': ['address is required'],
     }
 
+    # check string length by default
+    person, errors = load({'first-name': ''}, Person)
+    assert person.first_name == ''
+    assert errors == {
+        'first-name': ['first-name is required'],
+        'last-name': ['last-name is required'],
+        'age': ['age is required'],
+        'address': ['address is required'],
+    }
+
 
 def test_class_validation():
     request, errors = load({'action': 1}, Request)
@@ -100,14 +110,30 @@ def test_class_validation():
     assert errors == {'action': ['test_class_validation is not dataclass']}
 
 
-def test_trim_str():
+def test_str():
     @dataclass
     class Data:
         name: Optional[str]
 
+    # str will trim by default
     data, errors = load({'name': ' _trim_ '}, Data)
     assert errors == {}
     assert data == Data(name='_trim_')
+
+
+def always_failed(_: str):
+    return 'failed'
+
+
+@dataclass
+class Validate:
+    name: v(str, always_failed)
+
+
+def test_validator():
+    data, errors = load({'name': '1234'}, Validate, )
+    assert errors == {'name': ['failed']}
+    assert data == Validate(name='1234')
 
 
 def test_dump():
@@ -132,4 +158,28 @@ def test_dump():
         'action': {
             '__module__': 'tests.test_typed_json', '__name__': 'Update', 'id': 1, 'name': 'update'
         }
+    }
+
+
+def test_size():
+    @dataclass
+    class Size:
+        both: v(str, size(5, 10))
+        min: v(str, size(min=5))
+        max: v(str, size(max=5))
+        none: v(str, size())
+
+    _, errors = load(
+        {
+            'both': '1234',
+            'min': '1234',
+            'max': '123456',
+            'none': ''
+        },
+        Size
+    )
+    assert errors == {
+        'both': ['should be greater or equal to 5 and smaller or equal to 10'],
+        'min': ['should be greater or equal to 5'],
+        'max': ['should be smaller or equal to 5']
     }
