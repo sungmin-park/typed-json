@@ -26,6 +26,7 @@ def load(source: JsonObjectType, target: Type[T]) -> Tuple[T, Errors]:
             continue
 
         value = source[json_name]
+
         if is_dataclass(hint):
             if not isinstance(value, dict):
                 kwargs[name] = None
