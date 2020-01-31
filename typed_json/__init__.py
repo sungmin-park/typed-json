@@ -1,4 +1,4 @@
-import importlib
+import sys
 from dataclasses import is_dataclass
 from typing import Dict, Union, TypeVar, Type, get_type_hints, Any
 
@@ -18,7 +18,10 @@ def load(source: JsonObjectType, target: Type[T]) -> T:
         if is_dataclass(hint):
             cls_name = value['__name__']
             module_name = value['__module__']
-            cls = getattr(importlib.import_module(module_name), cls_name)
+            # 미리 임포트 되어 있는 module 만 사용할 수 있도록 강제한다.
+            cls = getattr(sys.modules[module_name], cls_name)
+            if not is_dataclass(cls):
+                raise ValueError('target class should be dataclass')
             value = load(value, cls)
         kwargs[name] = value
 
