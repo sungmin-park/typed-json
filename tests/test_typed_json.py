@@ -100,6 +100,16 @@ def test_class_validation():
     assert errors == {'action': ['test_class_validation is not dataclass']}
 
 
+def test_trim_str():
+    @dataclass
+    class Data:
+        name: Optional[str]
+
+    data, errors = load({'name': ' _trim_ '}, Data)
+    assert errors == {}
+    assert data == Data(name='_trim_')
+
+
 def test_dump():
     person = dump(Person(first_name='John', last_name='Doe', age=18, sex=None, address=Address(street='11 st')))
     assert person == {

@@ -49,6 +49,9 @@ def load(source: JsonObjectType, target: Type[T]) -> Tuple[T, Errors]:
                 errors[name].append(f'{cls_name} is not dataclass')
                 continue
             value, value_errors = load(value, cls)
+        elif hint == str or str in getattr(hint, '__args__', []):
+            if value is not None:
+                value = value.strip()
         kwargs[name] = value
 
     obj = target(**kwargs)
