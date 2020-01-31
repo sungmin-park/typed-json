@@ -2,7 +2,7 @@ from typing import DefaultDict
 
 from pytest import raises
 
-from typed_json import TypedJson, String, ErrorsType, TypedJsonField, Integer
+from typed_json import TypedJson, String, ErrorsType, TypedJsonField, Integer, Class
 
 
 def test_class_field_access():
@@ -22,6 +22,13 @@ def test_class_field_access():
     john.name.value = 'john'
     jane.name.value = 'jane'
     assert john.name.value != jane.name.value, "In different instance values should be different."
+
+
+def test_field_value():
+    class Person(TypedJson):
+        name = String(value='john')
+
+    assert Person().name.value == 'john'
 
 
 def test_field_name():
@@ -57,6 +64,10 @@ def test_dump():
     person = Person().load({'first-name': 'John', 'last-name': 'Doe', 'address': 'Seoul, Korea'})
 
     assert person.dump() == {'first-name': 'John', 'last-name': 'Doe', 'address': 'Seoul, Korea'}
+    assert person.dump(typed=True) == {
+        '--name--': 'test_dump.<locals>.Person',
+        '--value--': {'first-name': 'John', 'last-name': 'Doe', 'address': 'Seoul, Korea'}
+    }
 
 
 def test_validate():
@@ -137,3 +148,20 @@ def test_str():
     # String validate should not works None
     person = Person()
     assert person.validate() == {person.name: ['name field is required']}
+
+
+def test_class():
+    class Action(TypedJson):
+        pass
+
+    class Request(TypedJson):
+        id = Integer(1)
+        action = Class(Action())
+
+    assert Request().dump() == {
+        'id': 1,
+        'action': {
+            '--name--': 'test_class.<locals>.Action',
+            '--value--': {}
+        }
+    }

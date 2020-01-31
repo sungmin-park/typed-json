@@ -31,6 +31,8 @@ class TypedJson:
 
         for name, prototype in self._field_prototypes.items():
             field = copy(prototype)
+            if hasattr(field, 'post_copy'):
+                field.post_copy()
             self._fields[name] = field
             setattr(self, name, field)
 
@@ -41,8 +43,10 @@ class TypedJson:
             field.value = source[field.name]
         return self
 
-    def dump(self) -> Dict[str, Any]:
-        return {field.name: field.value for field in self._fields.values()}
+    def dump(self, typed=False) -> Dict[str, Any]:
+        if not typed:
+            return {field.name: field.dump() for field in self._fields.values()}
+        return {'--name--': self.__class__.__qualname__, '--value--': self.dump()}
 
     def validate(self) -> 'Errors':
         errors = Errors()
@@ -73,7 +77,8 @@ class TypedJsonField(Generic[T]):
     optional: bool
     validators: List[Validator] = list()
 
-    def __init__(self, optional: bool = False, validators: Optional[Iterable[Validator]] = None):
+    def __init__(self, value: T = None, optional: bool = False, validators: Optional[Iterable[Validator]] = None):
+        self.value = value
         self.optional = optional
         if validators is not None:
             self.validators = self.validators + list(validators)
@@ -96,6 +101,9 @@ class TypedJsonField(Generic[T]):
     def _validate(self, errors: ErrorsType) -> None:
         pass
 
+    def dump(self) -> T:
+        return self.value
+
 
 class String(TypedJsonField[str]):
     def _validate(self, errors: ErrorsType) -> None:
@@ -107,6 +115,21 @@ class Integer(TypedJsonField[int]):
     def _validate(self, errors: ErrorsType) -> None:
         if self.value is not None and not isinstance(self.value, int):
             errors.append(f'{self.name} field should be an integer number')
+
+
+U = TypeVar('U', bound=TypedJson)
+
+
+class Class(TypedJsonField[U]):
+    def __init__(self, value: U = None, optional: bool = False,
+                 validators: Optional[Iterable[Validator]] = None):
+        super().__init__(value, optional, validators)
+
+    def dump(self) -> Dict[str, ValidJsonType]:
+        return self.value.dump(typed=True)
+
+    def post_copy(self):
+        self.value = copy(self.value)
 
 
 class Errors(defaultdict, DefaultDict[TypedJsonField, ErrorsType]):
