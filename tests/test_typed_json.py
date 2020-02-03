@@ -3,7 +3,7 @@ from typing import Optional
 
 from pytest import raises
 
-from typed_json import load_, dump, v, size, NotDataclass
+from typed_json import load_, dump_, v, size, NotDataclass
 
 
 @dataclass
@@ -139,7 +139,7 @@ def test_validator():
 
 
 def test_dump():
-    person = dump(Person(first_name='John', last_name='Doe', age=18, sex=None, address=Address(street='11 st')))
+    person = dump_(Person(first_name='John', last_name='Doe', age=18, sex=None, address=Address(street='11 st')))
     assert person == {
         'first-name': 'John', 'last-name': 'Doe', 'age': 18, 'sex': None,
         'address': {
@@ -149,13 +149,13 @@ def test_dump():
         }
     }
 
-    request = dump(Request(action=Create(name='initial')))
+    request = dump_(Request(action=Create(name='initial')))
     assert request == {
         'action': {
             '__module__': 'tests.test_typed_json', '__name__': 'Create', 'name': 'initial'
         }
     }
-    request = dump(Request(action=Update(id=1, name='update')))
+    request = dump_(Request(action=Update(id=1, name='update')))
     assert request == {
         'action': {
             '__module__': 'tests.test_typed_json', '__name__': 'Update', 'id': 1, 'name': 'update'

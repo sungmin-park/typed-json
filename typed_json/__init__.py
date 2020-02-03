@@ -78,7 +78,7 @@ def load_(source: JsonObjectType, target: Type[T]) -> Tuple[T, Errors]:
     return obj, errors
 
 
-def dump(source: T) -> JsonObjectType:
+def dump_(source: T) -> JsonObjectType:
     json = {}
     hints = get_type_hints(source.__class__)
 
@@ -87,7 +87,7 @@ def dump(source: T) -> JsonObjectType:
         if is_dataclass(value):
             class_name = value.__class__.__name__
             module_name = value.__class__.__module__
-            value = dump(value)
+            value = dump_(value)
             value['__name__'] = class_name
             value['__module__'] = module_name
         json[spinalcase(name)] = value
