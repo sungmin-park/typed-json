@@ -19,6 +19,10 @@ class NotDataclass(ValueError):
     pass
 
 
+class UnknownType(ValueError):
+    pass
+
+
 def load(source: Dict[str, JsonType], type_: Type[T]) -> Tuple[Errors, T]:
     if not is_dataclass(type_):
         raise NotDataclass(f'load type_ only works with dataclass')
@@ -51,7 +55,7 @@ def _load_field(sources: Dict[str, JsonType], name: str, type_: Type[T]) -> \
     if root_type is str:
         return _load_str_field(source)
 
-    return None, sources[name]
+    raise UnknownType(f'Dose not know how to handle {root_type} type')
 
 
 def _load_str_field(source: Any) -> Tuple[Optional[str], Optional[T]]:

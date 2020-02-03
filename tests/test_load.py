@@ -4,7 +4,7 @@ from typing import Optional
 from pytest import raises
 
 # noinspection PyProtectedMember
-from typed_json.load import load, NotDataclass, _is_optional, Error, _root_type
+from typed_json.load import load, NotDataclass, _is_optional, Error, _root_type, UnknownType
 
 
 # Test Default load behaviors
@@ -66,6 +66,16 @@ def test_incorrect_type():
     errors, data = load({'string': 1}, Data)
     assert errors == {'string': [Error.INVALID_TYPE]}
     assert data.string == 1
+
+
+def test_unknown_type_load():
+    @dataclass
+    class Data:
+        unknown: object
+
+    with raises(UnknownType):
+        # noinspection PyTypeChecker
+        load({'unknown': object()}, Data)
 
 
 def test_root_type_load():
