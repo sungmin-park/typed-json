@@ -6,6 +6,7 @@ from typed_json.dump import dump
 from typed_json.load import NotDataclass, UnknownType
 
 
+# test dump
 def test_basic_dump():
     @dataclass
     class Person:
