@@ -20,7 +20,7 @@ class NotDataclass(ValueError):
         super().__init__(*args)
 
 
-def load(source: JsonObjectType, target: Type[T]) -> Tuple[T, Errors]:
+def load_(source: JsonObjectType, target: Type[T]) -> Tuple[T, Errors]:
     kwargs = {}
     hints = get_type_hints(target)
 
@@ -59,7 +59,7 @@ def load(source: JsonObjectType, target: Type[T]) -> Tuple[T, Errors]:
                     kwargs[name] = None
                     errors[name].append(f'{cls_name} is not dataclass')
                     continue
-                value, value_errors = load(value, cls)
+                value, value_errors = load_(value, cls)
             elif hint == str or str in getattr(hint, '__args__', []):
                 if value is not None:
                     value = value.strip()

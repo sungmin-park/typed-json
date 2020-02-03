@@ -3,7 +3,7 @@ from typing import Optional
 
 from pytest import raises
 
-from typed_json import load, dump, v, size, NotDataclass
+from typed_json import load_, dump, v, size, NotDataclass
 
 
 @dataclass
@@ -43,7 +43,7 @@ class Update(Create):
 
 def test_load():
     # test property load
-    person, errors = load(
+    person, errors = load_(
         {
             'first-name': 'John', 'last-name': 'Doe', 'age': 18,
             'address': {
@@ -56,13 +56,13 @@ def test_load():
     assert errors == {}
 
     # test polymorphic load
-    request, errors = load(
+    request, errors = load_(
         {'action': {'__name__': 'Create', '__module__': 'tests.test_typed_json', 'name': 'initial'}},
         Request
     )
     assert request.action == Create(name='initial')
     assert errors == {}
-    request, errors = load(
+    request, errors = load_(
         {'action': {'__name__': 'Update', '__module__': 'tests.test_typed_json', 'id': 1, 'name': 'update'}},
         Request
     )
@@ -71,7 +71,7 @@ def test_load():
 
 
 def test_validate_required():
-    person, errors = load({}, Person)
+    person, errors = load_({}, Person)
     assert person.first_name is None
     assert errors == {
         'first-name': ['first-name is required'],
@@ -81,7 +81,7 @@ def test_validate_required():
     }
 
     # check string length by default
-    person, errors = load({'first-name': ''}, Person)
+    person, errors = load_({'first-name': ''}, Person)
     assert person.first_name == ''
     assert errors == {
         'first-name': ['first-name is required'],
@@ -92,19 +92,19 @@ def test_validate_required():
 
 
 def test_class_validation():
-    request, errors = load({'action': 1}, Request)
+    request, errors = load_({'action': 1}, Request)
     assert request.action is None
     assert errors == {'action': ['action should be a dict']}
 
-    request, errors = load({'action': {'name': 'invalid'}}, Request)
+    request, errors = load_({'action': {'name': 'invalid'}}, Request)
     assert request.action is None
     assert errors == {'action': ['action missing typed-json type information']}
 
-    request, errors = load({'action': {'__name__': 'backdoor', '__module__': 'danger'}}, Request)
+    request, errors = load_({'action': {'__name__': 'backdoor', '__module__': 'danger'}}, Request)
     assert request.action is None
     assert errors == {'action': ['danger module is not imported']}
 
-    request, errors = load(
+    request, errors = load_(
         {'action': {'__name__': 'test_class_validation', '__module__': 'tests.test_typed_json'}},
         Request
     )
@@ -118,7 +118,7 @@ def test_str():
         name: Optional[str]
 
     # str will trim by default
-    data, errors = load({'name': ' _trim_ '}, Data)
+    data, errors = load_({'name': ' _trim_ '}, Data)
     assert errors == {}
     assert data == Data(name='_trim_')
 
@@ -133,7 +133,7 @@ class Validate:
 
 
 def test_validator():
-    data, errors = load({'name': '1234'}, Validate, )
+    data, errors = load_({'name': '1234'}, Validate, )
     assert errors == {'name': ['failed']}
     assert data == Validate(name='1234')
 
@@ -171,7 +171,7 @@ def test_size():
         max: v(str, size(max=5))
         none: v(str, size())
 
-    _, errors = load(
+    _, errors = load_(
         {
             'both': '1234',
             'min': '1234',
@@ -192,4 +192,4 @@ def test_data_class_only():
         name: str
 
     with raises(NotDataclass):
-        _ = load({}, BasicClass)
+        _ = load_({}, BasicClass)
