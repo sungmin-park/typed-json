@@ -4,7 +4,7 @@ from typing import Optional
 from pytest import raises
 
 # noinspection PyProtectedMember
-from typed_json.load import load, NotDataclass, _is_optional, Error
+from typed_json.load import load, NotDataclass, _is_optional, Error, _root_type
 
 
 # Test Default load behaviors
@@ -58,17 +58,47 @@ def test_missing_optional_load():
     assert person.name is None
 
 
+def test_incorrect_type():
+    @dataclass
+    class Data:
+        string: str
+
+    errors, data = load({'string': 1}, Data)
+    assert errors == {'string': [Error.INVALID_TYPE]}
+    assert data.string == 1
+
+
+def test_root_type_load():
+    """ load 시에 root_type 을 사용해서 Type 을 체크하는지 확인
+    Optional[str] 은 str 로 처리되어야 하고, str 의 strip 을 거쳐야 한다.
+    """
+
+    @dataclass
+    class Data:
+        optional_string: Optional[str]
+
+    errors, data = load({'optional_string': ' '}, Data)
+    assert errors == {}
+    assert data.optional_string == ''
+
+
+def test_root_type():
+    assert _root_type(str) == str
+    assert _root_type(Optional[str]) == str
+
+
 def test_is_optional():
     assert _is_optional(str) is False
     assert _is_optional(Optional[str]) is True
 
 
-# Test str
-def test_str_incorrect_type():
+# test str
+
+def test_str_strip():
     @dataclass
     class Data:
-        not_str: str
+        string: str
 
-    errors, data = load({'not_str': 1}, Data)
-    assert errors == {'not_str': [Error.INVALID_TYPE]}
-    assert data.not_str == 1
+    errors, data = load({'string': ' str '}, Data)
+    assert errors == {}
+    assert data.string == 'str'

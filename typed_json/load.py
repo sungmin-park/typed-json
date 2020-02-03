@@ -44,15 +44,17 @@ def _load_field(sources: Dict[str, JsonType], name: str, type_: Type[T]) -> \
 
     source = sources[name]
 
-    if type_ is str:
+    root_type = _root_type(type_)
+    if type(source) != root_type:
+        return Error.INVALID_TYPE, source
+
+    if root_type is str:
         return _load_str_field(source)
 
     return None, sources[name]
 
 
 def _load_str_field(source: Any) -> Tuple[Optional[str], Optional[T]]:
-    if not isinstance(source, str):
-        return Error.INVALID_TYPE, source
     return None, source.strip()
 
 
@@ -60,3 +62,9 @@ def _is_optional(type_: Type[T]) -> bool:
     if getattr(type_, '__origin__', None) != Union:
         return False
     return type(None) in getattr(type_, '__args__', [])
+
+
+def _root_type(type_: Type[T]) -> T:
+    if hasattr(type_, '__args__'):
+        return _root_type(type_.__args__[0])
+    return type_
