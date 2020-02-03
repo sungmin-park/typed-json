@@ -33,3 +33,13 @@ def test_not_dataclass_load():
 
     with raises(NotDataclass):
         load({}, Emtpy)
+
+
+def test_missing_load():
+    @dataclass
+    class Person:
+        name: str
+
+    errors, person = load({}, Person)
+    assert errors == {'name': ['__missing__']}
+    assert person.name is None
