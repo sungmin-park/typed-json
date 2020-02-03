@@ -1,10 +1,10 @@
 from collections import defaultdict
 from dataclasses import is_dataclass
-from typing import TypeVar, Dict, Union, DefaultDict, List, Tuple, Type, get_type_hints, Optional
+from typing import TypeVar, Dict, Union, DefaultDict, List, Tuple, Type, get_type_hints, Optional, Any
 
 T = TypeVar('T')
 
-JsonType = Union[str, 'JsonObject']
+JsonType = Union[str, int, 'JsonObject']
 JsonObject = Dict[str, JsonType]
 
 Errors = DefaultDict[str, Union[List[str], 'Errors']]
@@ -12,6 +12,7 @@ Errors = DefaultDict[str, Union[List[str], 'Errors']]
 
 class Error:
     MISSING = '__MISSING__'
+    INVALID_TYPE = '__INVALID_TYPE__'
 
 
 class NotDataclass(ValueError):
@@ -33,15 +34,26 @@ def load(source: Dict[str, JsonType], type_: Type[T]) -> Tuple[Errors, T]:
     return errors, type_(**properties)
 
 
-def _load_field(source: Dict[str, JsonType], name: str, type_: Type[T]) -> \
+def _load_field(sources: Dict[str, JsonType], name: str, type_: Type[T]) -> \
         Tuple[Union[Optional[str], 'Errors'], Optional[T]]:
-    if name not in source:
+    if name not in sources:
         if _is_optional(type_):
             return None, None
         else:
             return Error.MISSING, None
 
-    return None, source[name]
+    source = sources[name]
+
+    if type_ is str:
+        return _load_str_field(source)
+
+    return None, sources[name]
+
+
+def _load_str_field(source: Any) -> Tuple[Optional[str], Optional[T]]:
+    if not isinstance(source, str):
+        return Error.INVALID_TYPE, source
+    return None, source.strip()
 
 
 def _is_optional(type_: Type[T]) -> bool:

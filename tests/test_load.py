@@ -7,6 +7,7 @@ from pytest import raises
 from typed_json.load import load, NotDataclass, _is_optional, Error
 
 
+# Test Default load behaviors
 def test_emtpy_load():
     # test emtpy class for signature
     @dataclass
@@ -60,3 +61,14 @@ def test_missing_optional_load():
 def test_is_optional():
     assert _is_optional(str) is False
     assert _is_optional(Optional[str]) is True
+
+
+# Test str
+def test_str_incorrect_type():
+    @dataclass
+    class Data:
+        not_str: str
+
+    errors, data = load({'not_str': 1}, Data)
+    assert errors == {'not_str': [Error.INVALID_TYPE]}
+    assert data.not_str == 1
