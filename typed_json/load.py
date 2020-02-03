@@ -26,7 +26,7 @@ class UnknownType(ValueError):
 
 def load(source: Dict[str, JsonType], type_: Type[T]) -> Tuple[Errors, T]:
     if not is_dataclass(type_):
-        raise NotDataclass(f'load type_ only works with dataclass')
+        raise NotDataclass(f'load only works with dataclass, {type_} is not dataclass')
 
     properties = {}
     errors = defaultdict(list)
