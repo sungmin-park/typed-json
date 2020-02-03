@@ -20,8 +20,8 @@ def load(source: Dict[str, JsonType], type_: Type[T]) -> Tuple[Errors, T]:
 
     properties = {}
     errors = defaultdict(list)
-    for name in get_type_hints(type_):
-        filed_error, field_value = _load_field(source, name)
+    for name, hint in get_type_hints(type_).items():
+        filed_error, field_value = _load_field(source, name, hint)
         if filed_error:
             errors[name].append(filed_error)
         properties[name] = field_value
@@ -29,8 +29,18 @@ def load(source: Dict[str, JsonType], type_: Type[T]) -> Tuple[Errors, T]:
     return errors, type_(**properties)
 
 
-def _load_field(source: Dict[str, JsonType], name: str) -> Tuple[Union[Optional[str], 'Errors'], T]:
+def _load_field(source: Dict[str, JsonType], name: str, type_: Type[T]) -> \
+        Tuple[Union[Optional[str], 'Errors'], Optional[T]]:
     if name not in source:
-        return '__missing__', None
+        if _is_optional(type_):
+            return None, None
+        else:
+            return '__missing__', None
 
     return None, source[name]
+
+
+def _is_optional(type_: Type[T]) -> bool:
+    if getattr(type_, '__origin__', None) != Union:
+        return False
+    return type(None) in getattr(type_, '__args__', [])

@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from pytest import raises
 
-from typed_json.load import load, NotDataclass
+from typed_json.load import load, NotDataclass, _is_optional
 
 
 def test_emtpy_load():
@@ -43,3 +44,18 @@ def test_missing_load():
     errors, person = load({}, Person)
     assert errors == {'name': ['__missing__']}
     assert person.name is None
+
+
+def test_missing_optional_load():
+    @dataclass
+    class Person:
+        name: Optional[str]
+
+    errors, person = load({}, Person)
+    assert errors == {}
+    assert person.name is None
+
+
+def test_is_optional():
+    assert _is_optional(str) is False
+    assert _is_optional(Optional[str]) is True
