@@ -14,11 +14,21 @@ Errors = DefaultDict[str, Union[List[str], 'Errors']]
 Validator = Callable[[T], Union[str, List[str]]]
 
 
+class NotDataclass(ValueError):
+
+    def __init__(self, *args) -> None:
+        super().__init__(*args)
+
+
 def load(source: JsonObjectType, target: Type[T]) -> Tuple[T, Errors]:
     kwargs = {}
     hints = get_type_hints(target)
 
     errors = defaultdict(list)
+
+    if not is_dataclass(target):
+        raise NotDataclass(f'target should be a dataclass {target}')
+
     for name, hint in hints.items():
         json_name = spinalcase(name)
         if json_name not in source:

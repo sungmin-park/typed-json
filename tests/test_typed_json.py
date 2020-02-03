@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from typed_json import load, dump, v, size
+from pytest import raises
+
+from typed_json import load, dump, v, size, NotDataclass
 
 
 @dataclass
@@ -53,7 +55,7 @@ def test_load():
     assert person == Person(first_name='John', last_name='Doe', age=18, sex=None, address=Address(street='11 st'))
     assert errors == {}
 
-    # test inheritance
+    # test polymorphic load
     request, errors = load(
         {'action': {'__name__': 'Create', '__module__': 'tests.test_typed_json', 'name': 'initial'}},
         Request
@@ -183,3 +185,11 @@ def test_size():
         'min': ['should be greater or equal to 5'],
         'max': ['should be smaller or equal to 5']
     }
+
+
+def test_data_class_only():
+    class BasicClass:
+        name: str
+
+    with raises(NotDataclass):
+        _ = load({}, BasicClass)
