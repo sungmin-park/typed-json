@@ -3,7 +3,8 @@ from typing import Optional
 
 from pytest import raises
 
-from typed_json.load import load, NotDataclass, _is_optional
+# noinspection PyProtectedMember
+from typed_json.load import load, NotDataclass, _is_optional, Error
 
 
 def test_emtpy_load():
@@ -42,7 +43,7 @@ def test_missing_load():
         name: str
 
     errors, person = load({}, Person)
-    assert errors == {'name': ['__missing__']}
+    assert errors == {'name': [Error.MISSING]}
     assert person.name is None
 
 

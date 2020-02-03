@@ -10,6 +10,10 @@ JsonObject = Dict[str, JsonType]
 Errors = DefaultDict[str, Union[List[str], 'Errors']]
 
 
+class Error:
+    MISSING = '__MISSING__'
+
+
 class NotDataclass(ValueError):
     pass
 
@@ -35,7 +39,7 @@ def _load_field(source: Dict[str, JsonType], name: str, type_: Type[T]) -> \
         if _is_optional(type_):
             return None, None
         else:
-            return '__missing__', None
+            return Error.MISSING, None
 
     return None, source[name]
 
