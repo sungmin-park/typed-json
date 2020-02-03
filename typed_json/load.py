@@ -12,6 +12,7 @@ Errors = DefaultDict[str, Union[List[str], 'Errors']]
 
 class Error:
     MISSING = '__MISSING__'
+    REQUIRED = '__REQUIRED__'
     INVALID_TYPE = '__INVALID_TYPE__'
 
 
@@ -40,8 +41,10 @@ def load(source: Dict[str, JsonType], type_: Type[T]) -> Tuple[Errors, T]:
 
 def _load_field(sources: Dict[str, JsonType], name: str, type_: Type[T]) -> \
         Tuple[Union[Optional[str], 'Errors'], Optional[T]]:
+    optional = _is_optional(type_)
+
     if name not in sources:
-        if _is_optional(type_):
+        if optional:
             return None, None
         else:
             return Error.MISSING, None
@@ -53,7 +56,11 @@ def _load_field(sources: Dict[str, JsonType], name: str, type_: Type[T]) -> \
         return Error.INVALID_TYPE, source
 
     if root_type is str:
-        return None, source.strip()
+        value = source.strip()
+        error = None
+        if not value and not optional:
+            error = Error.REQUIRED
+        return error, value
 
     if root_type is int:
         return None, source

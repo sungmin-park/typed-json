@@ -113,6 +113,18 @@ def test_str_strip():
     assert data.string == 'str'
 
 
+def test_str_required():
+    """str 는 기본값이 항상 required 이다."""
+
+    @dataclass
+    class Data:
+        string: str
+
+    errors, data = load({'string': ' '}, Data)
+    assert errors == {'string': [Error.REQUIRED]}
+    assert data.string == ''
+
+
 # test int
 def test_int():
     @dataclass
