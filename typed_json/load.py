@@ -1,6 +1,6 @@
 from collections import defaultdict
 from dataclasses import is_dataclass
-from typing import TypeVar, Dict, Union, DefaultDict, List, Tuple, Type, get_type_hints, Optional, Any
+from typing import TypeVar, Dict, Union, DefaultDict, List, Tuple, Type, get_type_hints, Optional
 
 T = TypeVar('T')
 
@@ -53,13 +53,12 @@ def _load_field(sources: Dict[str, JsonType], name: str, type_: Type[T]) -> \
         return Error.INVALID_TYPE, source
 
     if root_type is str:
-        return _load_str_field(source)
+        return None, source.strip()
+
+    if root_type is int:
+        return None, source
 
     raise UnknownType(f'Dose not know how to handle {root_type} type')
-
-
-def _load_str_field(source: Any) -> Tuple[Optional[str], Optional[T]]:
-    return None, source.strip()
 
 
 def _is_optional(type_: Type[T]) -> bool:

@@ -103,7 +103,6 @@ def test_is_optional():
 
 
 # test str
-
 def test_str_strip():
     @dataclass
     class Data:
@@ -112,3 +111,14 @@ def test_str_strip():
     errors, data = load({'string': ' str '}, Data)
     assert errors == {}
     assert data.string == 'str'
+
+
+# test int
+def test_int():
+    @dataclass
+    class Data:
+        integer: int
+
+    errors, data = load({'integer': 0}, Data)
+    assert errors == {}
+    assert data.integer == 0
