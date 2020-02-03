@@ -17,7 +17,3 @@ def dump(data: Any) -> JsonObject:
         json[name] = getattr(data, name)
 
     return json
-
-
-def dump_field():
-    pass
