@@ -6,6 +6,8 @@ from typed_json.generator.dart import convert, DartClass, NotLocalClass, NotNest
 from typed_json.load import NotDataclass, UnknownType
 
 
+# test convert
+
 @dataclass
 class ConverterData:
     string: str
@@ -64,3 +66,23 @@ class StrData:
 
 def test_str():
     assert convert(StrData).fields == [DartField(name='string', type_='String')]
+
+
+# test to_dart global
+
+def test_to_dart():
+    dc = DartClass(name='Person', location=[], filename='',
+                   fields=[DartField(name='name', type_='String')])
+    assert dc.to_dart_codes() == """\
+    class Person {
+      String name;
+      
+      Person(this.name);
+    }"""
+
+
+def test_to_fields():
+    dc = DartClass(name='', location=[], filename='', fields=[DartField(name='name', type_='String')])
+    assert dc.to_fields() == [
+        'String name;',
+    ]

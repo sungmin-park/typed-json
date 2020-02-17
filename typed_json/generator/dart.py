@@ -19,6 +19,19 @@ class DartClass:
     filename: str
     fields: List['DartField']
 
+    def to_dart_codes(self, indent: str = '  ') -> List[str]:
+        parameters = ', '.join(f'this.{field.name}' for field in self.fields)
+        constructor = f'{self.name}({parameters});'
+        body = [*self.to_fields(), '', constructor, '']
+        return [
+            f'class {self.name} {{',
+            *map(lambda x: f'{indent}{x}', body),
+            '}',
+        ]
+
+    def to_fields(self) -> List[str]:
+        return [f'{field.type_} {field.name};' for field in self.fields]
+
 
 @dataclass
 class DartField:
