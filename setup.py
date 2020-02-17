@@ -4,6 +4,6 @@ setup(
     name='typed-json',
     version='0.0.1',
     packages=['typed_json'],
-    install_requires=['stringcase==1.2.0'],
+    install_requires=[],
     extras_require={'dev': ['pytest']}
 )
