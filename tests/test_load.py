@@ -15,6 +15,16 @@ def test_load():
     assert person == Person(name='john')
 
 
+def test_load_emtpy():
+    @dataclass
+    class Person:
+        pass
+
+    person, errors = load({}, Person)
+    assert errors == {}
+    assert person == Person()
+
+
 def test_not_dataclass():
     with raises(ValueError):
         load({}, object)
