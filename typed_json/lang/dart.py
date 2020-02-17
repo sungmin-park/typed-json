@@ -37,5 +37,5 @@ class DartFile(Renderer):
 class Dart:
     files: Iterable[DartFile] = tuple()
 
-    def dump(self) -> Dict[Iterable[str], str]:
+    def dump(self) -> Dict[str, str]:
         return {os.path.join(*file.path) + '.dart': file.render() for file in self.files}
