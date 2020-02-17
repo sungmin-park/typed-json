@@ -7,12 +7,12 @@ from typed_json.lang.dart import DartClass
 
 
 @dataclass
-class TestDartPerson:
+class DartClassPerson:
     pass
 
 
-def test_dart():
-    assert dart_class(TestDartPerson) == DartClass(name='TestDartPerson')
+def test_dart_class():
+    assert dart_class(DartClassPerson) == DartClass(name='DartClassPerson')
 
 
 def test_not_dataclass():
